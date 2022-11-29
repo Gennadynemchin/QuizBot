@@ -35,7 +35,6 @@ def new_question(bot, update):
 
 def give_up(bot, update):
     user = str(update.message.from_user)
-    question = redis_db.get(f'{user}_question')
     answer = redis_db.get(f'{user}_answer')
     update.message.reply_text(answer)
 
@@ -58,10 +57,6 @@ def get_answer(bot, update):
         update.message.reply_text('Naaah!')
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
-
-
 def main():
     updater = Updater(telegram_token)
     dp = updater.dispatcher
@@ -71,7 +66,6 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex(r"Сдаться"), give_up))
     dp.add_handler(MessageHandler(Filters.regex(r"Показать результаты"), get_score))
     dp.add_handler(MessageHandler(Filters.text, get_answer))
-    dp.add_error_handler(error)
 
     updater.start_polling()
     updater.idle()
