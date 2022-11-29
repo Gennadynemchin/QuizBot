@@ -26,14 +26,36 @@ def start(bot, update):
 def new_question(bot, update):
     question, answer = get_random_question()
     user = str(update.message.from_user)
-    redis_db.set(user, answer)
+    redis_db.set(f'{user}_question', question)
+    redis_db.set(f'{user}_answer', answer)
+    if redis_db.get(f'{user}_score') is None:
+        redis_db.set(f'{user}_score', 0)
     update.message.reply_text(question)
+
+
+def give_up(bot, update):
+    user = str(update.message.from_user)
+    question = redis_db.get(f'{user}_question')
+    answer = redis_db.get(f'{user}_answer')
+    update.message.reply_text(answer)
+
+
+def get_score(bot, update):
+    user = str(update.message.from_user)
+    score = redis_db.get(f'{user}_score')
+    update.message.reply_text(score)
 
 
 def get_answer(bot, update):
     user = str(update.message.from_user)
-    answer = redis_db.get(user)
-    update.message.reply_text(answer)
+    user_answer = str(update.message)
+    right_answer = redis_db.get(f'{user}_answer')
+    score = int(redis_db.get(f'{user}_score'))
+    if str(right_answer).find(str(user_answer)):
+        update.message.reply_text('Correct!')
+        redis_db.set(f'{user}_score', score+1)
+    else:
+        update.message.reply_text('Naaah!')
 
 
 def error(bot, update, error):
@@ -46,7 +68,9 @@ def main():
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(MessageHandler(Filters.regex(r"Новый вопрос"), new_question))
-    dp.add_handler(MessageHandler(Filters.regex(r"Сдаться"), get_answer))
+    dp.add_handler(MessageHandler(Filters.regex(r"Сдаться"), give_up))
+    dp.add_handler(MessageHandler(Filters.regex(r"Показать результаты"), get_score))
+    dp.add_handler(MessageHandler(Filters.text, get_answer))
     dp.add_error_handler(error)
 
     updater.start_polling()
