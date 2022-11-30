@@ -66,7 +66,7 @@ def give_up(bot, update):
 def get_score(bot, update):
     user = update.message.from_user
     score = redis_db.get(f'{user}_score')
-    update.message.reply_text(score)
+    update.message.reply_text(f'The score is {score}')
 
 
 def reset_score(bot, update):
