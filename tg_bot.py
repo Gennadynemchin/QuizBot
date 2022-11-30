@@ -24,15 +24,17 @@ class State(Enum):
 
 
 def start(bot, update):
+    user = update.message.from_user
     custom_keyboard = [['Новый вопрос', 'Сдаться'], ['Показать результаты']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
+    redis_db.set(f'{user}_score', 0)
     return State.NEW_QUESTION
 
 
 def handle_new_question_request(bot, update):
     question, answer = get_random_question()
-    user = str(update.message.from_user)
+    user = update.message.from_user
     redis_db.set(f'{user}_question', question)
     redis_db.set(f'{user}_answer', answer)
     update.message.reply_text(question)
@@ -40,11 +42,14 @@ def handle_new_question_request(bot, update):
 
 
 def handle_solution_attempt(bot, update):
-    user = str(update.message.from_user)
-    user_answer = str(update.message.text)
+    user = update.message.from_user
+    user_answer = update.message.text
     right_answer = redis_db.get(f'{user}_answer')
+    score = redis_db.get(f'{user}_score')
     if user_answer.lower() == right_answer.lower():
         update.message.reply_text('Correct!')
+        score = int(score) + 1
+        redis_db.set(f'{user}_score', score)
         return State.NEW_QUESTION
     else:
         update.message.reply_text('Naaah!')
@@ -52,16 +57,23 @@ def handle_solution_attempt(bot, update):
 
 
 def give_up(bot, update):
-    user = str(update.message.from_user)
+    user = update.message.from_user
     answer = redis_db.get(f'{user}_answer')
     update.message.reply_text(answer)
     return State.NEW_QUESTION
 
 
 def get_score(bot, update):
-    user = str(update.message.from_user)
+    user = update.message.from_user
     score = redis_db.get(f'{user}_score')
     update.message.reply_text(score)
+
+
+def reset_score(bot, update):
+    user = update.message.from_user
+    redis_db.set(f'{user}_score', 0)
+    score = redis_db.get(f'{user}_score')
+    update.message.reply_text(f'The score is {score}')
 
 
 def main():
@@ -73,15 +85,15 @@ def main():
         states={State.NEW_QUESTION: [MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
                                      MessageHandler(Filters.regex(r'Показать результаты'), get_score)],
 
-                State.ANSWER_ATTEMPT: [MessageHandler(Filters.text, handle_solution_attempt),
-
-                                       MessageHandler(Filters.regex(r'Показать результаты'), get_score)],
+                State.ANSWER_ATTEMPT: [MessageHandler(Filters.regex(r'Сдаться'), give_up),
+                                       MessageHandler(Filters.regex(r'Показать результаты'), get_score),
+                                       MessageHandler(Filters.text, handle_solution_attempt)],
 
                 State.GIVE_UP: [MessageHandler(Filters.regex(r'Сдаться'), give_up),
-                                MessageHandler(Filters.regex(r'Показать результаты'), get_score)]
+                                MessageHandler(Filters.regex(r'Показать результаты'), get_score),
+                                MessageHandler(Filters.text, handle_solution_attempt)]
                 },
-
-        fallbacks=[])
+        fallbacks=[CommandHandler('reset', reset_score)])
 
     dp.add_handler(conv_handler)
     updater.start_polling()
