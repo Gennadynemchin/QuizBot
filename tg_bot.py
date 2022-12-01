@@ -43,16 +43,19 @@ def handle_new_question_request(bot, update):
 
 def handle_solution_attempt(bot, update):
     user = update.message.from_user
-    user_answer = update.message.text
-    right_answer = redis_db.get(f'{user}_answer')
+    user_answer = update.message.text.lower()
+    right_answer = redis_db.get(f'{user}_answer').replace('.', '#'). \
+        replace('(', '#'). \
+        replace('"', ''). \
+        split('#')[0].lower()
     score = redis_db.get(f'{user}_score')
-    if user_answer.lower() == right_answer.lower():
-        update.message.reply_text('Correct!')
+    if user_answer == right_answer:
         score = int(score) + 1
         redis_db.set(f'{user}_score', score)
+        update.message.reply_text(f'Абсолютно верно! Ваш счет: {score}')
         return State.NEW_QUESTION
     else:
-        update.message.reply_text('Naaah!')
+        update.message.reply_text('К сожалению, это неправильный ответ')
         return State.GIVE_UP
 
 
@@ -66,14 +69,14 @@ def give_up(bot, update):
 def get_score(bot, update):
     user = update.message.from_user
     score = redis_db.get(f'{user}_score')
-    update.message.reply_text(f'The score is {score}')
+    update.message.reply_text(f'Ваш счет: {score}')
 
 
 def reset_score(bot, update):
     user = update.message.from_user
     redis_db.set(f'{user}_score', 0)
     score = redis_db.get(f'{user}_score')
-    update.message.reply_text(f'The score is {score}')
+    update.message.reply_text(f'Счет сброшен. Текущий счет: {score}')
 
 
 def main():
