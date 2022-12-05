@@ -3,7 +3,7 @@ import redis
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from get_question import get_random_question
+from questions import get_random_question, save_user_question, create_new_user, check_user_answer
 from credentials import telegram_token, redis_login, redis_password, redis_host
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -24,56 +24,47 @@ class State(Enum):
 
 
 def start(bot, update):
-    user = update.message.from_user
+    user = update.effective_user.id
     custom_keyboard = [['Новый вопрос', 'Сдаться'], ['Показать результаты']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
-    redis_db.set(f'{user}_score', 0)
+    # redis_db.set(f'{user}_score', 0)
+    create_new_user(redis_db, 'tg', user)
     return State.NEW_QUESTION
 
 
 def handle_new_question_request(bot, update):
     question, answer = get_random_question()
-    user = update.message.from_user
-    redis_db.set(f'{user}_question', question)
-    redis_db.set(f'{user}_answer', answer)
+    user = update.effective_user.id
+    # redis_db.set(f'{user}_question', question)
+    # redis_db.set(f'{user}_answer', answer)
+    save_user_question(redis_db, 'tg', user, question, answer)
     update.message.reply_text(question)
     return State.ANSWER_ATTEMPT
 
 
 def handle_solution_attempt(bot, update):
-    user = update.message.from_user
+    user = update.effective_user.id
     user_answer = update.message.text.lower()
-    right_answer = redis_db.get(f'{user}_answer').replace('.', '#'). \
-        replace('(', '#'). \
-        replace('"', ''). \
-        split('#')[0].lower()
-    score = redis_db.get(f'{user}_score')
-    if user_answer == right_answer:
-        score = int(score) + 1
-        redis_db.set(f'{user}_score', score)
-        update.message.reply_text(f'Абсолютно верно! Ваш счет: {score}')
-        return State.NEW_QUESTION
-    else:
-        update.message.reply_text('К сожалению, это неправильный ответ')
-        return State.GIVE_UP
+    print(check_user_answer(redis_db, 'tg', user, user_answer))
+    return State.GIVE_UP
 
 
 def give_up(bot, update):
-    user = update.message.from_user
+    user = update.effective_user.id
     answer = redis_db.get(f'{user}_answer')
     update.message.reply_text(answer)
     return State.NEW_QUESTION
 
 
 def get_score(bot, update):
-    user = update.message.from_user
+    user = update.effective_user.id
     score = redis_db.get(f'{user}_score')
     update.message.reply_text(f'Ваш счет: {score}')
 
 
 def reset_score(bot, update):
-    user = update.message.from_user
+    user = update.effective_user.id
     redis_db.set(f'{user}_score', 0)
     score = redis_db.get(f'{user}_score')
     update.message.reply_text(f'Счет сброшен. Текущий счет: {score}')
