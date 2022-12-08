@@ -63,7 +63,7 @@ def check_user_answer(redis_connect, messenger, user, user_answer):
         value = json.dumps({"question": question,
                             "answer": answer,
                             "correct_answers": correct_answers,
-                            "total_answers": total_answers + 1}, ensure_ascii=False)
+                            "total_answers": total_answers}, ensure_ascii=False)
         redis_connect.set(key, value)
         return False
 

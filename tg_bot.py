@@ -34,7 +34,6 @@ def start(bot, update):
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
     create_new_user(redis_db, 'tg', user)
-    print(get_user_info(redis_db, 'tg', user))
     return State.NEW_QUESTION
 
 
@@ -43,7 +42,6 @@ def handle_new_question_request(bot, update):
     user = update.effective_user.id
     save_user_question(redis_db, 'tg', user, question, answer)
     update.message.reply_text(question)
-    print(get_user_info(redis_db, 'tg', user))
     return State.ANSWER_ATTEMPT
 
 
