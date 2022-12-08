@@ -23,7 +23,10 @@ def create_new_user(redis_connect, messenger, user):
 
 def get_user_info(redis_connect, messenger, user):
     key = f'user_{messenger}_{user}'
-    return redis_connect.get(key)
+    user_info = json.loads(redis_connect.get(key))
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    return correct_answers, total_answers
 
 
 def save_user_question(redis_connect, messenger, user, question, answer):
@@ -54,12 +57,30 @@ def check_user_answer(redis_connect, messenger, user, user_answer):
                             "answer": answer,
                             "correct_answers": correct_answers + 1,
                             "total_answers": total_answers + 1}, ensure_ascii=False)
+        redis_connect.set(key, value)
+        return True
     else:
         value = json.dumps({"question": question,
                             "answer": answer,
                             "correct_answers": correct_answers,
                             "total_answers": total_answers + 1}, ensure_ascii=False)
-    return redis_connect.set(key, value)
+        redis_connect.set(key, value)
+        return False
+
+
+def giveup_user(redis_connect, messenger, user):
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_connect.get(key))
+    question = user_info['question']
+    answer = user_info['answer']
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": correct_answers,
+                        "total_answers": total_answers + 1}, ensure_ascii=False)
+    redis_connect.set(key, value)
+    return answer
 
 
 def main():

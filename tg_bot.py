@@ -3,7 +3,12 @@ import redis
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import get_random_question, save_user_question, create_new_user, check_user_answer, get_user_info
+from questions import get_random_question, \
+    save_user_question, \
+    create_new_user, \
+    check_user_answer, \
+    get_user_info, \
+    giveup_user
 from credentials import telegram_token, redis_login, redis_password, redis_host
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -45,22 +50,25 @@ def handle_new_question_request(bot, update):
 def handle_solution_attempt(bot, update):
     user = update.effective_user.id
     user_answer = update.message.text.lower()
-    print(check_user_answer(redis_db, 'tg', user, user_answer))
-    print(get_user_info(redis_db, 'tg', user))
-    return State.GIVE_UP
+    result = check_user_answer(redis_db, 'tg', user, user_answer)
+    if result:
+        update.message.reply_text('Абсолютно верно!')
+        return State.NEW_QUESTION
+    else:
+        update.message.reply_text('Это неправильный ответ. Попробуй еще раз')
+        return State.GIVE_UP
 
 
 def give_up(bot, update):
     user = update.effective_user.id
-    answer = redis_db.get(f'{user}_answer')
-    update.message.reply_text(answer)
+    update.message.reply_text(giveup_user(redis_db, 'tg', user))
     return State.NEW_QUESTION
 
 
 def get_score(bot, update):
     user = update.effective_user.id
-    score = redis_db.get(f'{user}_score')
-    update.message.reply_text(f'Ваш счет: {score}')
+    correct_answers, total_answers = get_user_info(redis_db, 'tg', user)
+    update.message.reply_text(f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}')
 
 
 def reset_score(bot, update):
