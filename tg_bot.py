@@ -3,7 +3,7 @@ import redis
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import get_random_question, save_user_question, create_new_user, check_user_answer
+from questions import get_random_question, save_user_question, create_new_user, check_user_answer, get_user_info
 from credentials import telegram_token, redis_login, redis_password, redis_host
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,18 +28,17 @@ def start(bot, update):
     custom_keyboard = [['Новый вопрос', 'Сдаться'], ['Показать результаты']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
-    # redis_db.set(f'{user}_score', 0)
     create_new_user(redis_db, 'tg', user)
+    print(get_user_info(redis_db, 'tg', user))
     return State.NEW_QUESTION
 
 
 def handle_new_question_request(bot, update):
     question, answer = get_random_question()
     user = update.effective_user.id
-    # redis_db.set(f'{user}_question', question)
-    # redis_db.set(f'{user}_answer', answer)
     save_user_question(redis_db, 'tg', user, question, answer)
     update.message.reply_text(question)
+    print(get_user_info(redis_db, 'tg', user))
     return State.ANSWER_ATTEMPT
 
 
@@ -47,6 +46,7 @@ def handle_solution_attempt(bot, update):
     user = update.effective_user.id
     user_answer = update.message.text.lower()
     print(check_user_answer(redis_db, 'tg', user, user_answer))
+    print(get_user_info(redis_db, 'tg', user))
     return State.GIVE_UP
 
 
