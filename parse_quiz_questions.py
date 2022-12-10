@@ -1,4 +1,5 @@
 import os
+import re
 import json
 
 
@@ -15,12 +16,9 @@ for filename in os.listdir(folder):
 dictionary = {}
 for element in array:
     if element.startswith(("Вопрос", "\nВопрос")):
-        temp_question = element.split(":\n")
-        question = element.split(":\n")[1]
-        question = question.replace('\n', ' ')
+        question = re.sub(" +", " ", element.split(":\n")[1].replace('\n', ' '))
     elif element.startswith(("Ответ", "\nОтвет")):
-        answer = element.split(":\n")[1]
-        answer = answer.replace('\n', ' ')
+        answer = re.sub(" +", " ", element.split(":\n")[1].replace('\n', ' '))
     try:
         dictionary[question] = answer
     except Exception:
