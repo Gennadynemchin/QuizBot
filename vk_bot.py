@@ -1,7 +1,6 @@
 import random
 import vk_api as vk
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from vk_api.utils import get_random_id
 from vk_api.longpoll import VkLongPoll, VkEventType
 from questions import vk_token
 
