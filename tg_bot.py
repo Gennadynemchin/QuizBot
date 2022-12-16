@@ -8,8 +8,11 @@ from questions import get_random_question, \
     create_new_user, \
     check_user_answer, \
     get_user_info, \
-    giveup_user
-from credentials import telegram_token, redis_login, redis_password, redis_host
+    giveup_user, \
+    telegram_token, \
+    redis_login, \
+    redis_password, \
+    redis_host
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)

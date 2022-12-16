@@ -5,6 +5,14 @@ import redis
 from dotenv import load_dotenv
 
 
+load_dotenv()
+telegram_token = os.getenv('TELEGRAM_TOKEN')
+redis_login = os.getenv('REDIS_LOGIN')
+redis_password = os.getenv('REDIS_PASSWORD')
+redis_host = os.getenv('REDIS_HOST')
+vk_token = os.getenv('VK_TOKEN')
+
+
 def get_random_question():
     with open('sample.json', 'r') as openfile:
         json_object = json.load(openfile)
@@ -84,12 +92,6 @@ def giveup_user(redis_connect, messenger, user):
 
 
 def main():
-    load_dotenv()
-    telegram_token = os.getenv('TELEGRAM_TOKEN')
-    redis_login = os.getenv('REDIS_LOGIN')
-    redis_password = os.getenv('REDIS_PASSWORD')
-    redis_host = os.getenv('REDIS_HOST')
-
     redis_db = redis.Redis(host=redis_host,
                            port=14083,
                            username=redis_login,
