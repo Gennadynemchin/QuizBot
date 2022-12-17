@@ -19,11 +19,10 @@ def quiz_bot(event, vk_api):
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
     keyboard.add_line()
     keyboard.add_button('Показать результаты', color=VkKeyboardColor.SECONDARY)
-    vk_api.messages.send(
-        user_id=event.user_id,
-        message=event.text,
-        keyboard=keyboard)
-
+    vk_api.messages.send(user_id=event.user_id,
+                         message=event.text,
+                         random_id=0,
+                         keyboard=keyboard.get_keyboard())
 
 
 if __name__ == "__main__":
