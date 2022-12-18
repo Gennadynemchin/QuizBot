@@ -20,10 +20,12 @@ def quiz_bot(vk_longpoll, vk_api):
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
     keyboard.add_line()
     keyboard.add_button('Показать результаты', color=VkKeyboardColor.SECONDARY)
-# create_new_user(redis_db, 'vk', user)
+
     for event in vk_longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
+            if not redis_db.exists(f'user_{messenger}_{user}'):
+                create_new_user(redis_db, 'vk', user)
             if event.text == 'Новый вопрос':
                 question, answer = get_random_question()
                 save_user_question(redis_db, messenger, user, question, answer)
@@ -33,7 +35,6 @@ def quiz_bot(vk_longpoll, vk_api):
                                      keyboard=keyboard.get_keyboard())
             elif event.text == 'Сдаться':
                 message = giveup_user(redis_db, messenger, user)
-                print(message)
                 vk_api.messages.send(user_id=user,
                                      message=message,
                                      random_id=0,
