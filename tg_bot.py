@@ -1,5 +1,6 @@
 import logging
 import redis
+from questions import redis_db
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
@@ -18,11 +19,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-redis_db = redis.Redis(host=redis_host,
-                       port=14083,
-                       username=redis_login,
-                       password=redis_password,
-                       decode_responses=True)
+messenger = 'tg'
 
 
 class State(Enum):
@@ -36,14 +33,14 @@ def start(bot, update):
     custom_keyboard = [['Новый вопрос', 'Сдаться'], ['Показать результаты']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
-    create_new_user(redis_db, 'tg', user)
+    create_new_user(redis_db, messenger, user)
     return State.NEW_QUESTION
 
 
 def handle_new_question_request(bot, update):
     question, answer = get_random_question()
     user = update.effective_user.id
-    save_user_question(redis_db, 'tg', user, question, answer)
+    save_user_question(redis_db, messenger, user, question, answer)
     update.message.reply_text(question)
     return State.ANSWER_ATTEMPT
 
@@ -51,7 +48,7 @@ def handle_new_question_request(bot, update):
 def handle_solution_attempt(bot, update):
     user = update.effective_user.id
     user_answer = update.message.text.lower()
-    result = check_user_answer(redis_db, 'tg', user, user_answer)
+    result = check_user_answer(redis_db, messenger, user, user_answer)
     if result:
         update.message.reply_text('Абсолютно верно!')
         return State.NEW_QUESTION
@@ -62,13 +59,13 @@ def handle_solution_attempt(bot, update):
 
 def give_up(bot, update):
     user = update.effective_user.id
-    update.message.reply_text(giveup_user(redis_db, 'tg', user))
+    update.message.reply_text(giveup_user(redis_db, messenger, user))
     return State.NEW_QUESTION
 
 
 def get_score(bot, update):
     user = update.effective_user.id
-    correct_answers, total_answers = get_user_info(redis_db, 'tg', user)
+    correct_answers, total_answers = get_user_info(redis_db, messenger, user)
     update.message.reply_text(f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}')
 
 

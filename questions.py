@@ -13,6 +13,13 @@ redis_host = os.getenv('REDIS_HOST')
 vk_token = os.getenv('VK_TOKEN')
 
 
+redis_db = redis.Redis(host=redis_host,
+                       port=14083,
+                       username=redis_login,
+                       password=redis_password,
+                       decode_responses=True)
+
+
 def get_random_question():
     with open('sample.json', 'r') as openfile:
         json_object = json.load(openfile)
