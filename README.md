@@ -26,7 +26,7 @@ VK_TOKEN=<YOUR-VK-TOKEN>
 
 - Get your Telegram bot token from https://t.me/BotFather
 - You can deploy Redis database on your own server or use for example
-on https://redis.com.
+on https://redis.com
 - For VK bot you have to create new community. After that go to
 the Community - Settings - API usage - Access tokens - Create token.
 Then go to the Messages - Bot settings and turn on "Community messages"
