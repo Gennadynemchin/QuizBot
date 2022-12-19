@@ -98,13 +98,18 @@ def giveup_user(redis_connect, messenger, user):
     return answer
 
 
-def main():
-    redis_db = redis.Redis(host=redis_host,
-                           port=14083,
-                           username=redis_login,
-                           password=redis_password,
-                           decode_responses=True)
+def reset_user_score(redis_connect, messenger, user):
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_connect.get(key))
+    question = user_info['question']
+    answer = user_info['answer']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": 0,
+                        "total_answers": 0}, ensure_ascii=False)
+    redis_connect.set(key, value)
 
 
-if __name__ == '__main__':
-    main()
+def delete_user(redis_connect, messenger, user):
+    key = f'user_{messenger}_{user}'
+    redis_connect.delete(key)

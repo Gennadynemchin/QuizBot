@@ -1,6 +1,7 @@
 import vk_api as vk
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.exceptions import ApiError
 from questions import vk_token, \
     get_random_question, \
     save_user_question, \
@@ -8,6 +9,8 @@ from questions import vk_token, \
     check_user_answer, \
     get_user_info, \
     giveup_user, \
+    delete_user, \
+    reset_user_score, \
     redis_db
 
 
@@ -34,11 +37,17 @@ def quiz_bot(vk_longpoll, vk_api):
                                      random_id=0,
                                      keyboard=keyboard.get_keyboard())
             elif event.text == 'Сдаться':
-                message = giveup_user(redis_db, messenger, user)
-                vk_api.messages.send(user_id=user,
-                                     message=message,
-                                     random_id=0,
-                                     keyboard=keyboard.get_keyboard())
+                try:
+                    message = giveup_user(redis_db, messenger, user)
+                    vk_api.messages.send(user_id=user,
+                                         message=message,
+                                         random_id=0,
+                                         keyboard=keyboard.get_keyboard())
+                except ApiError:
+                    vk_api.messages.send(user_id=user,
+                                         message='Попробуй нажать "Новый вопрос"',
+                                         random_id=0,
+                                         keyboard=keyboard.get_keyboard())
             elif event.text == 'Показать результаты':
                 correct_answers, total_answers = get_user_info(redis_db, messenger, user)
                 vk_api.messages.send(user_id=user,
@@ -46,18 +55,27 @@ def quiz_bot(vk_longpoll, vk_api):
                                      random_id=0,
                                      keyboard=keyboard.get_keyboard())
             elif event.text == '/delete_user':
-                redis_db.delete(f'user_{messenger}_{user}')
+                delete_user(redis_db, messenger, user)
+            elif event.text == '/reset_score':
+                reset_user_score(redis_db, messenger, user)
             else:
-                user_answer = event.text.lower()
-                result = check_user_answer(redis_db, messenger, user, user_answer)
-                if result:
+                try:
+                    user_answer = event.text.lower()
+                    result = check_user_answer(redis_db, messenger, user, user_answer)
+                    if result:
+                        vk_api.messages.send(user_id=user,
+                                             message=f"{user_answer} 'Абсолютно верно!'",
+                                             random_id=0,
+                                             keyboard=keyboard.get_keyboard())
+                    else:
+                        vk_api.messages.send(user_id=user,
+                                             message=f"{user_answer} 'Это неправильный ответ. Попробуй еще раз'",
+                                             random_id=0,
+                                             keyboard=keyboard.get_keyboard())
+                except AttributeError:
                     vk_api.messages.send(user_id=user,
-                                         message=f"{user_answer} 'Абсолютно верно!'",
-                                         random_id=0,
-                                         keyboard=keyboard.get_keyboard())
-                else:
-                    vk_api.messages.send(user_id=user,
-                                         message=f"{user_answer} 'Это неправильный ответ. Попробуй еще раз'",
+                                         message='Я не совсем понял, что ты имеешь ввиду. '
+                                                 'Попробуй нажать "Новый вопрос"',
                                          random_id=0,
                                          keyboard=keyboard.get_keyboard())
 

@@ -10,6 +10,8 @@ from questions import get_random_question, \
     check_user_answer, \
     get_user_info, \
     giveup_user, \
+    delete_user, \
+    reset_user_score, \
     telegram_token, \
     redis_login, \
     redis_password, \
@@ -93,7 +95,7 @@ def main():
                                 MessageHandler(Filters.regex(r'Показать результаты'), get_score),
                                 MessageHandler(Filters.text, handle_solution_attempt)]
                 },
-        fallbacks=[CommandHandler('reset', reset_score)])
+        fallbacks=[CommandHandler('reset_score', reset_score)])
 
     dp.add_handler(conv_handler)
     updater.start_polling()
