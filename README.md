@@ -10,18 +10,26 @@ is a kind of quiz with unambiguous answers (for example math quiz).
 ### How to install
 
 ```
-git clone https://github.com/Gennadynemchin/QuizBot.git
+git clone git@github.com:Gennadynemchin/QuizBot.git
 ```
 
-- Use .env.example as a draft and fill all of the requested
+Use .env.example as a draft and fill all of the requested
 variables:
 
 ```
-TELEGRAM_TOKEN='YOUR_TELEGRAM_TOKEN'
-VK_TOKEN='VK_GROUP_TOKEN'
-GOOGLE_APPLICATION_CREDENTIALS='JSON_WITH_GOOGLE_CREDENTIALS'
-GOOGLE_CLOUD_PROJECT='ID_OF_GOOGLE_CLOUD_PROJECT'
+TELEGRAM_TOKEN=<YOUR-TELEGRAM-TOKEN>
+REDIS_HOST=<YOUR-REDIS-DB-URL>
+REDIS_LOGIN=<YOUR-REDIS-LOGIN>
+REDIS_PASSWORD=<YOUR-REDIS-PASSWORD>
+VK_TOKEN=<YOUR-VK-TOKEN>
 ```
+
+- Get your Telegram bot token from https://t.me/BotFather
+- You can deploy Redis database on your own server or use for example
+on https://redis.com.
+- For VK bot you have to create new community. After that go to
+the Community - Settings - API usage - Access tokens - Create token.
+Then go to the Messages - Bot settings and turn on "Community messages"
 
 ### How to start
 
@@ -36,12 +44,11 @@ vk_bot.py
 
 1. Copy this repository to your server:
 ```
-git clone git@github.com:Gennadynemchin/VerbGameBot.git
+git clone git@github.com:Gennadynemchin/QuizBot.git
 ```
-2. `cd VerbGameBot`
-3. `nano .env.example`. Then fill all needed variables as shown above;
-4. `nano verbgamebot_credentials.json.example` Then save it;
-5. Save google credentials as `verbgamebot_credentials.json`
-6. Build an image:
+2. `cd QuizBot`
+3. `nano .env.example`. Then fill all needed variables as shown above. 
+Save edited file as `.env`;
+4. Build an image:
 `docker build -t your-image-name . `
-7. Then `docker run -d --restart always your-image-name`
+5. Then `docker run -d --restart always your-image-name`
