@@ -13,7 +13,6 @@ from questions import vk_token, \
     reset_user_score, \
     redis_db
 
-
 messenger = 'vk'
 
 

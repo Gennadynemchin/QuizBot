@@ -1,5 +1,4 @@
 import logging
-import redis
 from questions import redis_db
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
@@ -10,12 +9,7 @@ from questions import get_random_question, \
     check_user_answer, \
     get_user_info, \
     giveup_user, \
-    delete_user, \
-    reset_user_score, \
-    telegram_token, \
-    redis_login, \
-    redis_password, \
-    redis_host
+    telegram_token
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
