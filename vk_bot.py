@@ -45,6 +45,8 @@ def quiz_bot(vk_longpoll, vk_api):
                                      message=f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}',
                                      random_id=0,
                                      keyboard=keyboard.get_keyboard())
+            elif event.text == '/delete_user':
+                redis_db.delete(f'user_{messenger}_{user}')
             else:
                 user_answer = event.text.lower()
                 result = check_user_answer(redis_db, messenger, user, user_answer)

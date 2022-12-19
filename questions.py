@@ -66,7 +66,7 @@ def check_user_answer(redis_connect, messenger, user, user_answer):
     right_answer = user_info['answer'].replace('.', '#'). \
         replace('(', '#'). \
         replace('"', ''). \
-        split('#')[0].lower()
+        split('#')[0].lower().rstrip()
     if user_answer == right_answer:
         value = json.dumps({"question": question,
                             "answer": answer,

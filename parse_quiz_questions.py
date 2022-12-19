@@ -28,11 +28,3 @@ json_object = json.dumps(dictionary, indent=4, ensure_ascii=False)
 print(dictionary)
 with open("sample.json", "w") as outfile:
     outfile.write(json_object)
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()
