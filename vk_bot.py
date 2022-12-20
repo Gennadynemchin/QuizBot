@@ -1,22 +1,23 @@
 import vk_api as vk
+import os
+import redis
+from dotenv import load_dotenv
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.exceptions import ApiError
-from questions import vk_token, \
-    get_random_question, \
+from questions import get_random_question, \
     save_user_question, \
     create_new_user, \
     check_user_answer, \
     get_user_info, \
     giveup_user, \
     delete_user, \
-    reset_user_score, \
-    redis_db
+    reset_user_score
 
 messenger = 'vk'
 
 
-def quiz_bot(vk_longpoll, vk_api):
+def quiz_bot(vk_longpoll, vk_api, redis_db):
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
@@ -79,8 +80,24 @@ def quiz_bot(vk_longpoll, vk_api):
                                          keyboard=keyboard.get_keyboard())
 
 
-if __name__ == "__main__":
+def main():
+    load_dotenv()
+    load_dotenv()
+    vk_token = os.getenv('VK_TOKEN')
+    redis_login = os.getenv('REDIS_LOGIN')
+    redis_password = os.getenv('REDIS_PASSWORD')
+    redis_host = os.getenv('REDIS_HOST')
+    redis_db = redis.Redis(host=redis_host,
+                           port=14083,
+                           username=redis_login,
+                           password=redis_password,
+                           decode_responses=True)
+
     vk_session = vk.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
     vk_longpoll = VkLongPoll(vk_session)
-    quiz_bot(vk_longpoll, vk_api)
+    quiz_bot(vk_longpoll, vk_api, redis_db)
+
+
+if __name__ == "__main__":
+    main()

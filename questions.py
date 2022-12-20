@@ -2,22 +2,11 @@ import os
 import json
 import random
 import redis
-from dotenv import load_dotenv
 
 
-load_dotenv()
-telegram_token = os.getenv('TELEGRAM_TOKEN')
-redis_login = os.getenv('REDIS_LOGIN')
-redis_password = os.getenv('REDIS_PASSWORD')
-redis_host = os.getenv('REDIS_HOST')
-vk_token = os.getenv('VK_TOKEN')
 
 
-redis_db = redis.Redis(host=redis_host,
-                       port=14083,
-                       username=redis_login,
-                       password=redis_password,
-                       decode_responses=True)
+
 
 
 def get_random_question():
@@ -113,3 +102,11 @@ def reset_user_score(redis_connect, messenger, user):
 def delete_user(redis_connect, messenger, user):
     key = f'user_{messenger}_{user}'
     redis_connect.delete(key)
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
