@@ -11,10 +11,7 @@ from questions import get_random_question, \
     giveup_user, \
     telegram_token
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 messenger = 'tg'
 
 
@@ -73,9 +70,10 @@ def reset_score(bot, update):
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                        level=logging.DEBUG)
     updater = Updater(telegram_token)
     dp = updater.dispatcher
-
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={State.NEW_QUESTION: [MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
