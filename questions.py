@@ -1,12 +1,5 @@
-import os
 import json
 import random
-import redis
-
-
-
-
-
 
 
 def get_random_question():

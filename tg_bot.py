@@ -2,6 +2,7 @@ import logging
 from functools import partial
 import os
 import redis
+import json
 from dotenv import load_dotenv
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
@@ -28,14 +29,29 @@ def start(bot, update, redis_db):
     custom_keyboard = [['Новый вопрос', 'Сдаться'], ['Показать результаты']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Hi!', reply_markup=reply_markup)
-    create_new_user(redis_db, messenger, user)
+    key = f'user_{messenger}_{user}'
+    value = json.dumps({"question": None,
+                        "answer": None,
+                        "correct_answers": 0,
+                        "total_answers": 0}, ensure_ascii=False)
+    redis_db.set(key, value)
+    # create_new_user(redis_db, messenger, user)
     return State.NEW_QUESTION
 
 
 def handle_new_question_request(bot, update, redis_db):
     question, answer = get_random_question()
     user = update.effective_user.id
-    save_user_question(redis_db, messenger, user, question, answer)
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": correct_answers,
+                        "total_answers": total_answers}, ensure_ascii=False)
+    redis_db.set(key, value)
+    # save_user_question(redis_db, messenger, user, question, answer)
     update.message.reply_text(question)
     return State.ANSWER_ATTEMPT
 

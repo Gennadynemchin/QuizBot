@@ -82,7 +82,6 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
 
 def main():
     load_dotenv()
-    load_dotenv()
     vk_token = os.getenv('VK_TOKEN')
     redis_login = os.getenv('REDIS_LOGIN')
     redis_password = os.getenv('REDIS_PASSWORD')
