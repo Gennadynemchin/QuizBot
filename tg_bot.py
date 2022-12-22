@@ -7,12 +7,7 @@ from dotenv import load_dotenv
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import get_random_question, \
-    save_user_question, \
-    create_new_user, \
-    check_user_answer, \
-    get_user_info, \
-    giveup_user
+from questions import get_random_question, check_user_answer
 
 logger = logging.getLogger(__name__)
 messenger = 'tg'
@@ -70,20 +65,45 @@ def handle_solution_attempt(bot, update, redis_db):
 
 def give_up(bot, update, redis_db):
     user = update.effective_user.id
-    update.message.reply_text(giveup_user(redis_db, messenger, user))
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    question = user_info['question']
+    answer = user_info['answer']
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": correct_answers,
+                        "total_answers": total_answers + 1}, ensure_ascii=False)
+    redis_db.set(key, value)
+    # update.message.reply_text(giveup_user(redis_db, messenger, user))
     return State.NEW_QUESTION
 
 
 def get_score(bot, update, redis_db):
     user = update.effective_user.id
-    correct_answers, total_answers = get_user_info(redis_db, messenger, user)
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    # correct_answers, total_answers = get_user_info(redis_db, messenger, user)
     update.message.reply_text(f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}')
 
 
 def reset_score(bot, update, redis_db):
     user = update.effective_user.id
-    redis_db.set(f'{user}_score', 0)
-    score = redis_db.get(f'{user}_score')
+    # redis_db.set(f'{user}_score', 0)
+    # score = redis_db.get(f'{user}_score')
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    question = user_info['question']
+    answer = user_info['answer']
+    score = user_info['correct_answers']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": 0,
+                        "total_answers": 0}, ensure_ascii=False)
+    redis_db.set(key, value)
     update.message.reply_text(f'Счет сброшен. Текущий счет: {score}')
 
 
