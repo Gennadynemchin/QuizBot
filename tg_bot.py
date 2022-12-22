@@ -76,7 +76,7 @@ def give_up(bot, update, redis_db):
                         "correct_answers": correct_answers,
                         "total_answers": total_answers + 1}, ensure_ascii=False)
     redis_db.set(key, value)
-    # update.message.reply_text(giveup_user(redis_db, messenger, user))
+    update.message.reply_text(answer)
     return State.NEW_QUESTION
 
 
