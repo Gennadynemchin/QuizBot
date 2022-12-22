@@ -77,7 +77,11 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
                                          random_id=0,
                                          keyboard=keyboard.get_keyboard())
             elif event.text == 'Показать результаты':
-                correct_answers, total_answers = get_user_info(redis_db, messenger, user)
+                key = f'user_{messenger}_{user}'
+                user_info = json.loads(redis_db.get(key))
+                correct_answers = user_info['correct_answers']
+                total_answers = user_info['total_answers']
+                # correct_answers, total_answers = get_user_info(redis_db, messenger, user)
                 vk_api.messages.send(user_id=user,
                                      message=f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}',
                                      random_id=0,
