@@ -1,6 +1,7 @@
 import vk_api as vk
 import os
 import redis
+import json
 from dotenv import load_dotenv
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -12,7 +13,8 @@ from questions import get_random_question, \
     get_user_info, \
     giveup_user, \
     delete_user, \
-    reset_user_score
+    reset_user_score, \
+    questions
 
 messenger = 'vk'
 
@@ -28,19 +30,45 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
             if not redis_db.exists(f'user_{messenger}_{user}'):
-                create_new_user(redis_db, 'vk', user)
+                # create_new_user(redis_db, 'vk', user)
+                key = f'user_{messenger}_{user}'
+                value = json.dumps({"question": None,
+                                    "answer": None,
+                                    "correct_answers": 0,
+                                    "total_answers": 0}, ensure_ascii=False)
+                redis_db.set(key, value)
             if event.text == 'Новый вопрос':
-                question, answer = get_random_question()
-                save_user_question(redis_db, messenger, user, question, answer)
+                question, answer = get_random_question(questions)
+                key = f'user_{messenger}_{user}'
+                user_info = json.loads(redis_db.get(key))
+                correct_answers = user_info['correct_answers']
+                total_answers = user_info['total_answers']
+                value = json.dumps({"question": question,
+                                    "answer": answer,
+                                    "correct_answers": correct_answers,
+                                    "total_answers": total_answers}, ensure_ascii=False)
+                redis_db.set(key, value)
+                # save_user_question(redis_db, messenger, user, question, answer)
                 vk_api.messages.send(user_id=user,
                                      message=question,
                                      random_id=0,
                                      keyboard=keyboard.get_keyboard())
             elif event.text == 'Сдаться':
                 try:
-                    message = giveup_user(redis_db, messenger, user)
+                    key = f'user_{messenger}_{user}'
+                    user_info = json.loads(redis_db.get(key))
+                    question = user_info['question']
+                    answer = user_info['answer']
+                    correct_answers = user_info['correct_answers']
+                    total_answers = user_info['total_answers']
+                    value = json.dumps({"question": question,
+                                        "answer": answer,
+                                        "correct_answers": correct_answers,
+                                        "total_answers": total_answers + 1}, ensure_ascii=False)
+                    redis_db.set(key, value)
+                    # message = giveup_user(redis_db, messenger, user)
                     vk_api.messages.send(user_id=user,
-                                         message=message,
+                                         message=answer,
                                          random_id=0,
                                          keyboard=keyboard.get_keyboard())
                 except ApiError:

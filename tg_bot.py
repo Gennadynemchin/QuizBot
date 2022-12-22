@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import get_random_question, check_user_answer
+from questions import get_random_question, check_user_answer, questions
 
 logger = logging.getLogger(__name__)
 messenger = 'tg'
@@ -35,7 +35,7 @@ def start(bot, update, redis_db):
 
 
 def handle_new_question_request(bot, update, redis_db):
-    question, answer = get_random_question()
+    question, answer = get_random_question(questions)
     user = update.effective_user.id
     key = f'user_{messenger}_{user}'
     user_info = json.loads(redis_db.get(key))
