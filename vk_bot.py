@@ -83,15 +83,15 @@ def quiz_bot(vk_longpoll, vk_api, redis_db, keyboard):
             else:
                 try:
                     user_answer = event.text.lower()
-                    result, user, user_info = check_user_answer(redis_db, messenger, user, user_answer)
+                    result, user_redis, user_redis_info = check_user_answer(redis_db, messenger, user, user_answer)
                     if result:
-                        redis_db.set(user, user_info)
+                        redis_db.set(user_redis, user_redis_info)
                         vk_api.messages.send(user_id=user,
                                              message=f"{user_answer} 'Абсолютно верно!'",
                                              random_id=0,
                                              keyboard=keyboard.get_keyboard())
                     else:
-                        redis_db.set(user, user_info)
+                        redis_db.set(user_redis, user_redis_info)
                         vk_api.messages.send(user_id=user,
                                              message=f"{user_answer} 'Это неправильный ответ. Попробуй еще раз'",
                                              random_id=0,
