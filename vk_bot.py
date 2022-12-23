@@ -47,13 +47,7 @@ def give_up(user, messenger, redis_db):
     return answer
 
 
-def quiz_bot(vk_longpoll, vk_api, redis_db):
-    keyboard = VkKeyboard(one_time=False)
-    keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
-    keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
-    keyboard.add_line()
-    keyboard.add_button('Показать результаты', color=VkKeyboardColor.SECONDARY)
-
+def quiz_bot(vk_longpoll, vk_api, redis_db, keyboard):
     for event in vk_longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
@@ -69,7 +63,7 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
             elif event.text == 'Сдаться':
                 message = give_up(user, messenger, redis_db)
                 if message is None:
-                    message = 'Такого пользователя нет в базе'
+                    message = 'Пожалуйста, нажмите "Новый вопрос"'
                 vk_api.messages.send(user_id=user,
                                      message=message,
                                      random_id=0,
@@ -124,7 +118,14 @@ def main():
     vk_session = vk.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
     vk_longpoll = VkLongPoll(vk_session)
-    quiz_bot(vk_longpoll, vk_api, redis_db)
+
+    keyboard = VkKeyboard(one_time=False)
+    keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
+    keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
+    keyboard.add_line()
+    keyboard.add_button('Показать результаты', color=VkKeyboardColor.SECONDARY)
+
+    quiz_bot(vk_longpoll, vk_api, redis_db, keyboard)
 
 
 if __name__ == "__main__":
