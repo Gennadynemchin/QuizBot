@@ -5,7 +5,6 @@ import json
 from dotenv import load_dotenv
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.exceptions import ApiError
 from questions import get_random_question, check_user_answer, delete_user, reset_user_score, questions
 
 messenger = 'vk'
