@@ -43,7 +43,7 @@ For generating a new sample.json just run:
 parse_quiz_questions.py
 ```
 The script is already has path to the folder ```quiz-questions```.
-The all of the file in the folder will be parsed and
+The all the file in the folder will be parsed and
 saved as the ```sample.json```. Then just put ```sample.json``` in
 root of your app.
 
