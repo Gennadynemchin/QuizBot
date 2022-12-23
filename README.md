@@ -31,6 +31,23 @@ on https://redis.com
 the Community - Settings - API usage - Access tokens - Create token.
 Then go to the Messages - Bot settings and turn on "Community messages"
 
+### How to get questions
+
+You can use sample.json which has questions and answers. However,
+there is quiz-questions folder that has several .txt files with
+questions and answers. Before use with both of the bots you have to
+prepare sample.json file with questions and answers as dictionary.
+For generating a new sample.json just run:
+
+```
+parse_quiz_questions.py
+```
+The script is already has path to the folder ```quiz-questions```.
+The all of the file in the folder will be parsed and
+saved as the ```sample.json```. Then just put ```sample.json``` in
+root of your app.
+
+
 ### How to start
 
 Run in a terminal:
