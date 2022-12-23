@@ -123,7 +123,7 @@ def main():
     keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
     keyboard.add_line()
-    keyboard.add_button('Показать результаты', color=VkKeyboardColor.SECONDARY)
+    keyboard.add_button('Показать результаты', color=VkKeyboardColor.POSITIVE)
 
     quiz_bot(vk_longpoll, vk_api, redis_db, keyboard)
 
