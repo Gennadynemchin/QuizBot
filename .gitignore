@@ -4,5 +4,6 @@ venv
 .venv
 .idea
 temp.py
+questions_to_redis.py
 /venv/
 quiz-questions copy
