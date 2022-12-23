@@ -30,7 +30,6 @@ def start(bot, update, redis_db):
                         "correct_answers": 0,
                         "total_answers": 0}, ensure_ascii=False)
     redis_db.set(key, value)
-    # create_new_user(redis_db, messenger, user)
     return State.NEW_QUESTION
 
 
@@ -46,7 +45,6 @@ def handle_new_question_request(bot, update, redis_db):
                         "correct_answers": correct_answers,
                         "total_answers": total_answers}, ensure_ascii=False)
     redis_db.set(key, value)
-    # save_user_question(redis_db, messenger, user, question, answer)
     update.message.reply_text(question)
     return State.ANSWER_ATTEMPT
 
@@ -86,14 +84,11 @@ def get_score(bot, update, redis_db):
     user_info = json.loads(redis_db.get(key))
     correct_answers = user_info['correct_answers']
     total_answers = user_info['total_answers']
-    # correct_answers, total_answers = get_user_info(redis_db, messenger, user)
     update.message.reply_text(f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}')
 
 
 def reset_score(bot, update, redis_db):
     user = update.effective_user.id
-    # redis_db.set(f'{user}_score', 0)
-    # score = redis_db.get(f'{user}_score')
     key = f'user_{messenger}_{user}'
     user_info = json.loads(redis_db.get(key))
     question = user_info['question']
