@@ -1,3 +1,4 @@
+import logging
 import vk_api as vk
 import os
 import redis
@@ -7,6 +8,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
 from questions import get_random_question, check_user_answer, delete_user, reset_user_score, questions
 
+logger = logging.getLogger(__name__)
 messenger = 'vk'
 
 
@@ -106,6 +108,8 @@ def quiz_bot(vk_longpoll, vk_api, redis_db, keyboard):
 
 def main():
     load_dotenv()
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                        level=logging.DEBUG)
     vk_token = os.getenv('VK_TOKEN')
     redis_login = os.getenv('REDIS_LOGIN')
     redis_password = os.getenv('REDIS_PASSWORD')
