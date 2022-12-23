@@ -52,11 +52,13 @@ def handle_new_question_request(bot, update, redis_db):
 def handle_solution_attempt(bot, update, redis_db):
     user = update.effective_user.id
     user_answer = update.message.text.lower()
-    result = check_user_answer(redis_db, messenger, user, user_answer)
+    result, user, user_info = check_user_answer(redis_db, messenger, user, user_answer)
     if result:
+        redis_db.set(user, user_info)
         update.message.reply_text('Абсолютно верно!')
         return State.NEW_QUESTION
     else:
+        redis_db.set(user, user_info)
         update.message.reply_text('Это неправильный ответ. Попробуй еще раз')
         return State.GIVE_UP
 

@@ -26,15 +26,13 @@ def check_user_answer(redis_connect, messenger, user, user_answer):
                             "answer": answer,
                             "correct_answers": correct_answers + 1,
                             "total_answers": total_answers + 1}, ensure_ascii=False)
-        redis_connect.set(key, value)
-        return True
+        return True, key, value
     else:
         value = json.dumps({"question": question,
                             "answer": answer,
                             "correct_answers": correct_answers,
                             "total_answers": total_answers}, ensure_ascii=False)
-        redis_connect.set(key, value)
-        return False
+        return False, key, value
 
 
 def reset_user_score(redis_connect, messenger, user):
