@@ -1,9 +1,8 @@
+questions_to_redis.py
 env
 venv
 .env
 .venv
 .idea
-temp.py
-questions_to_redis.py
 /venv/
 quiz-questions copy
