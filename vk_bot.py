@@ -11,6 +11,28 @@ from questions import get_random_question, check_user_answer, delete_user, reset
 messenger = 'vk'
 
 
+def create_user(user, messenger, redis_db):
+    key = f'user_{messenger}_{user}'
+    value = json.dumps({"question": None,
+                        "answer": None,
+                        "correct_answers": 0,
+                        "total_answers": 0}, ensure_ascii=False)
+    redis_db.set(key, value)
+
+
+def save_new_question(user, messenger, question, answer, redis_db):
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    value = json.dumps({"question": question,
+                        "answer": answer,
+                        "correct_answers": correct_answers,
+                        "total_answers": total_answers}, ensure_ascii=False)
+    redis_db.set(key, value)
+
+
+
 def quiz_bot(vk_longpoll, vk_api, redis_db):
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
@@ -22,25 +44,10 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
             if not redis_db.exists(f'user_{messenger}_{user}'):
-                # create_new_user(redis_db, 'vk', user)
-                key = f'user_{messenger}_{user}'
-                value = json.dumps({"question": None,
-                                    "answer": None,
-                                    "correct_answers": 0,
-                                    "total_answers": 0}, ensure_ascii=False)
-                redis_db.set(key, value)
+                create_user(user, messenger, redis_db)
             if event.text == 'Новый вопрос':
                 question, answer = get_random_question(questions)
-                key = f'user_{messenger}_{user}'
-                user_info = json.loads(redis_db.get(key))
-                correct_answers = user_info['correct_answers']
-                total_answers = user_info['total_answers']
-                value = json.dumps({"question": question,
-                                    "answer": answer,
-                                    "correct_answers": correct_answers,
-                                    "total_answers": total_answers}, ensure_ascii=False)
-                redis_db.set(key, value)
-                # save_user_question(redis_db, messenger, user, question, answer)
+                save_new_question(user, messenger, question, answer, redis_db)
                 vk_api.messages.send(user_id=user,
                                      message=question,
                                      random_id=0,
@@ -58,7 +65,6 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
                                         "correct_answers": correct_answers,
                                         "total_answers": total_answers + 1}, ensure_ascii=False)
                     redis_db.set(key, value)
-                    # message = giveup_user(redis_db, messenger, user)
                     vk_api.messages.send(user_id=user,
                                          message=answer,
                                          random_id=0,
@@ -73,7 +79,6 @@ def quiz_bot(vk_longpoll, vk_api, redis_db):
                 user_info = json.loads(redis_db.get(key))
                 correct_answers = user_info['correct_answers']
                 total_answers = user_info['total_answers']
-                # correct_answers, total_answers = get_user_info(redis_db, messenger, user)
                 vk_api.messages.send(user_id=user,
                                      message=f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}',
                                      random_id=0,
