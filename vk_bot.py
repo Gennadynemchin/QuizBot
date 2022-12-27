@@ -80,7 +80,8 @@ def quiz_bot(vk_longpoll, vk_api, redis_db, questions_dict, keyboard):
                                      random_id=0,
                                      keyboard=keyboard.get_keyboard())
             elif event.text == '/delete_user':
-                delete_user(redis_db, messenger, user)
+                key = f'user_{messenger}_{user}'
+                redis_db.delete(key)
             elif event.text == '/reset_score':
                 reset_user_score(redis_db, messenger, user)
             else:

@@ -105,6 +105,12 @@ def reset_score(bot, update, redis_db):
     update.message.reply_text(f'Счет сброшен. Текущий счет: {score}')
 
 
+def delete_user(bot, update, redis_db):
+    user = update.effective_user.id
+    key = f'user_{messenger}_{user}'
+    return redis_db.delete(key)
+
+
 def main():
     load_dotenv()
     telegram_token = os.getenv('TELEGRAM_TOKEN')
@@ -112,15 +118,13 @@ def main():
     redis_password = os.getenv('REDIS_PASSWORD')
     redis_host = os.getenv('REDIS_HOST')
     questions_path = os.getenv('QUESTIONS_PATH')
-
-    with open(questions_path, 'r') as openfile:
-        questions_dict = json.load(openfile)
-
     redis_db = redis.Redis(host=redis_host,
                            port=14083,
                            username=redis_login,
                            password=redis_password,
                            decode_responses=True)
+    with open(questions_path, 'r') as openfile:
+        questions_dict = json.load(openfile)
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.DEBUG)
@@ -156,7 +160,8 @@ def main():
                                                partial(handle_solution_attempt,
                                                        redis_db=redis_db))]
                 },
-        fallbacks=[CommandHandler('reset_score', partial(reset_score, redis_db=redis_db))])
+        fallbacks=[CommandHandler('reset_score', partial(reset_score, redis_db=redis_db)),
+                   CommandHandler('delete_user', partial(delete_user, redis_db=redis_db))])
 
     dp.add_handler(conv_handler)
     updater.start_polling()
