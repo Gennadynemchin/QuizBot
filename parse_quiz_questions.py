@@ -5,28 +5,29 @@ from dotenv import load_dotenv
 
 
 def file_to_array(folder='quiz-questions'):
-    array = []
+    questions_array = []
     for filename in os.listdir(folder):
         with open(os.path.join(folder, filename), 'r', encoding='koi8-r') as text:
             line = text.read()
-            splitter = line.split('\n\n')
-        for x in splitter:
-            array.append(x)
-    return array
+            question_blocks = line.split('\n\n')
+        for question_block in question_blocks:
+            questions_array.append(question_block)
+    return questions_array
 
 
 def array_to_json(array):
-    dictionary = {}
+    questions_dictionary = {}
     for element in array:
         if element.startswith(("Вопрос", "\nВопрос")):
             question = re.sub(" +", " ", element.split(":\n")[1].replace('\n', ' '))
         elif element.startswith(("Ответ", "\nОтвет")):
             answer = re.sub(" +", " ", element.split(":\n")[1].replace('\n', ' '))
         try:
-            dictionary[question] = answer
-        except Exception:
+            questions_dictionary[question] = answer
+        except UnboundLocalError:
             continue
-    questions_answers = json.dumps(dictionary, indent=4, ensure_ascii=False)
+
+    questions_answers = json.dumps(questions_dictionary, indent=4, ensure_ascii=False)
     with open("sample.json", "w") as outfile:
         return outfile.write(questions_answers)
 
