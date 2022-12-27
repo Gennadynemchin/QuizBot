@@ -1,12 +1,13 @@
 import logging
 import vk_api as vk
 import os
+import random
 import redis
 import json
 from dotenv import load_dotenv
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
-from questions import get_random_question, check_user_answer, delete_user, reset_user_score, questions
+from questions import check_user_answer, delete_user, reset_user_score
 
 logger = logging.getLogger(__name__)
 messenger = 'vk'
@@ -48,14 +49,14 @@ def give_up(user, messenger, redis_db):
     return answer
 
 
-def quiz_bot(vk_longpoll, vk_api, redis_db, keyboard):
+def quiz_bot(vk_longpoll, vk_api, redis_db, questions_dict, keyboard):
     for event in vk_longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
             if not redis_db.exists(f'user_{messenger}_{user}'):
                 create_user(user, messenger, redis_db)
             if event.text == 'Новый вопрос':
-                question, answer = get_random_question(questions)
+                question, answer = random.choice(list(questions_dict.items()))
                 save_new_question(user, messenger, question, answer, redis_db)
                 vk_api.messages.send(user_id=user,
                                      message=question,
@@ -114,6 +115,11 @@ def main():
     redis_login = os.getenv('REDIS_LOGIN')
     redis_password = os.getenv('REDIS_PASSWORD')
     redis_host = os.getenv('REDIS_HOST')
+    questions_path = os.getenv('QUESTIONS_PATH')
+
+    with open(questions_path, 'r') as openfile:
+        questions_dict = json.load(openfile)
+
     redis_db = redis.Redis(host=redis_host,
                            port=14083,
                            username=redis_login,
@@ -130,7 +136,7 @@ def main():
     keyboard.add_line()
     keyboard.add_button('Показать результаты', color=VkKeyboardColor.POSITIVE)
 
-    quiz_bot(vk_longpoll, vk_api, redis_db, keyboard)
+    quiz_bot(vk_longpoll, vk_api, redis_db, questions_dict, keyboard)
 
 
 if __name__ == "__main__":

@@ -1,13 +1,14 @@
 import logging
 from functools import partial
 import os
+import random
 import redis
 import json
 from dotenv import load_dotenv
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import get_random_question, check_user_answer, questions
+from questions import check_user_answer
 
 logger = logging.getLogger(__name__)
 messenger = 'tg'
@@ -33,8 +34,8 @@ def start(bot, update, redis_db):
     return State.NEW_QUESTION
 
 
-def handle_new_question_request(bot, update, redis_db):
-    question, answer = get_random_question(questions)
+def handle_new_question_request(bot, update, redis_db, questions_dict):
+    question, answer = random.choice(list(questions_dict.items()))
     user = update.effective_user.id
     key = f'user_{messenger}_{user}'
     user_info = json.loads(redis_db.get(key))
@@ -110,6 +111,11 @@ def main():
     redis_login = os.getenv('REDIS_LOGIN')
     redis_password = os.getenv('REDIS_PASSWORD')
     redis_host = os.getenv('REDIS_HOST')
+    questions_path = os.getenv('QUESTIONS_PATH')
+
+    with open(questions_path, 'r') as openfile:
+        questions_dict = json.load(openfile)
+
     redis_db = redis.Redis(host=redis_host,
                            port=14083,
                            username=redis_login,
@@ -125,7 +131,7 @@ def main():
         entry_points=[CommandHandler('start', partial(start, redis_db=redis_db))],
         states={State.NEW_QUESTION: [MessageHandler(Filters.regex(r'Новый вопрос'),
                                                     partial(handle_new_question_request,
-                                                            redis_db=redis_db)),
+                                                            redis_db=redis_db, questions_dict=questions_dict)),
                                      MessageHandler(Filters.regex(r'Показать результаты'),
                                                     partial(get_score,
                                                             redis_db=redis_db))],

@@ -1,13 +1,4 @@
 import json
-import random
-
-with open('sample.json', 'r') as openfile:
-    questions = json.load(openfile)
-
-
-def get_random_question(questions_file):
-    random_question, random_answer = random.choice(list(questions_file.items()))
-    return [random_question, random_answer]
 
 
 def check_user_answer(redis_connect, messenger, user, user_answer):
