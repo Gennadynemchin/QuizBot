@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from enum import Enum, auto
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
-from questions import check_user_answer
+from questions import get_right_answer
 
 logger = logging.getLogger(__name__)
 messenger = 'tg'
@@ -52,14 +52,20 @@ def handle_new_question_request(bot, update, redis_db, questions_dict):
 
 def handle_solution_attempt(bot, update, redis_db):
     user = update.effective_user.id
+    redis_key = f'user_{messenger}_{user}'
+    redis_user_info = json.loads(redis_db.get(redis_key))
     user_answer = update.message.text.lower()
-    result, user_redis, user_redis_info = check_user_answer(redis_db, messenger, user, user_answer)
-    if result:
-        redis_db.set(user_redis, user_redis_info)
+    right_answer = get_right_answer(redis_db, messenger, user)
+    if user_answer == right_answer:
+        redis_value = json.dumps({"question": redis_user_info['question'],
+                                  "answer": redis_user_info['answer'],
+                                  "correct_answers": redis_user_info['correct_answers'] + 1,
+                                  "total_answers": redis_user_info['total_answers'] + 1}, ensure_ascii=False)
+        redis_db.set(redis_key, redis_value)
         update.message.reply_text('Абсолютно верно!')
         return State.NEW_QUESTION
     else:
-        redis_db.set(user_redis, user_redis_info)
+        # redis_db.set(user_redis, user_redis_info)
         update.message.reply_text('Это неправильный ответ. Попробуй еще раз')
         return State.GIVE_UP
 
