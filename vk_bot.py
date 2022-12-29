@@ -22,7 +22,7 @@ def create_user(user, messenger, redis_db):
     redis_db.set(key, value)
 
 
-def save_new_question(user, messenger, question, answer, redis_db):
+def save_new_question(user, messenger, question, answer, redis_db, vk_api, keyboard):
     key = f'user_{messenger}_{user}'
     user_info = json.loads(redis_db.get(key))
     correct_answers = user_info['correct_answers']
@@ -31,10 +31,14 @@ def save_new_question(user, messenger, question, answer, redis_db):
                         "answer": answer,
                         "correct_answers": correct_answers,
                         "total_answers": total_answers}, ensure_ascii=False)
+    vk_api.messages.send(user_id=user,
+                         message=question,
+                         random_id=0,
+                         keyboard=keyboard.get_keyboard())
     redis_db.set(key, value)
 
 
-def give_up(user, messenger, redis_db):
+def give_up(user, messenger, redis_db, vk_api, keyboard):
     key = f'user_{messenger}_{user}'
     user_info = json.loads(redis_db.get(key))
     question = user_info['question']
@@ -45,8 +49,18 @@ def give_up(user, messenger, redis_db):
                         "answer": answer,
                         "correct_answers": correct_answers,
                         "total_answers": total_answers + 1}, ensure_ascii=False)
+    if answer is None:
+        message = 'Пожалуйста, нажмите "Новый вопрос"'
+        vk_api.messages.send(user_id=user,
+                             message=message,
+                             random_id=0,
+                             keyboard=keyboard.get_keyboard())
+    else:
+        vk_api.messages.send(user_id=user,
+                             message=answer,
+                             random_id=0,
+                             keyboard=keyboard.get_keyboard())
     redis_db.set(key, value)
-    return answer
 
 
 def handle_solution_attempt(redis_db, messenger, user, user_answer, vk_api, keyboard):
@@ -71,6 +85,17 @@ def handle_solution_attempt(redis_db, messenger, user, user_answer, vk_api, keyb
                              keyboard=keyboard.get_keyboard())
 
 
+def get_user_result(redis_db, messenger, user, vk_api, keyboard):
+    key = f'user_{messenger}_{user}'
+    user_info = json.loads(redis_db.get(key))
+    correct_answers = user_info['correct_answers']
+    total_answers = user_info['total_answers']
+    vk_api.messages.send(user_id=user,
+                         message=f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}',
+                         random_id=0,
+                         keyboard=keyboard.get_keyboard())
+
+
 def quiz_bot(vk_longpoll, vk_api, redis_db, questions_dict, keyboard):
     for event in vk_longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -79,28 +104,11 @@ def quiz_bot(vk_longpoll, vk_api, redis_db, questions_dict, keyboard):
                 create_user(user, messenger, redis_db)
             if event.text == 'Новый вопрос':
                 question, answer = random.choice(list(questions_dict.items()))
-                save_new_question(user, messenger, question, answer, redis_db)
-                vk_api.messages.send(user_id=user,
-                                     message=question,
-                                     random_id=0,
-                                     keyboard=keyboard.get_keyboard())
+                save_new_question(user, messenger, question, answer, redis_db, vk_api, keyboard)
             elif event.text == 'Сдаться':
-                message = give_up(user, messenger, redis_db)
-                if message is None:
-                    message = 'Пожалуйста, нажмите "Новый вопрос"'
-                vk_api.messages.send(user_id=user,
-                                     message=message,
-                                     random_id=0,
-                                     keyboard=keyboard.get_keyboard())
+                give_up(user, messenger, redis_db, vk_api, keyboard)
             elif event.text == 'Показать результаты':
-                key = f'user_{messenger}_{user}'
-                user_info = json.loads(redis_db.get(key))
-                correct_answers = user_info['correct_answers']
-                total_answers = user_info['total_answers']
-                vk_api.messages.send(user_id=user,
-                                     message=f'Верных ответов: {correct_answers}\nВсего ответов: {total_answers}',
-                                     random_id=0,
-                                     keyboard=keyboard.get_keyboard())
+                get_user_result(redis_db, messenger, user, vk_api, keyboard)
             elif event.text == '/delete_user':
                 key = f'user_{messenger}_{user}'
                 redis_db.delete(key)

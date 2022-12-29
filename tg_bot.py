@@ -65,7 +65,6 @@ def handle_solution_attempt(bot, update, redis_db):
         update.message.reply_text('Абсолютно верно!')
         return State.NEW_QUESTION
     else:
-        # redis_db.set(user_redis, user_redis_info)
         update.message.reply_text('Это неправильный ответ. Попробуй еще раз')
         return State.GIVE_UP
 
