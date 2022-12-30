@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 
 
-def file_to_array(folder='quiz-questions'):
+def get_questions(folder='quiz-questions'):
     questions_array = []
     for filename in os.listdir(folder):
         with open(os.path.join(folder, filename), 'r', encoding='koi8-r') as text:
@@ -15,7 +15,7 @@ def file_to_array(folder='quiz-questions'):
     return questions_array
 
 
-def array_to_json(array, filepath):
+def save_questions(array, filepath):
     questions_dictionary = {}
     for element in array:
         if element.startswith(("Вопрос", "\nВопрос")):
@@ -36,8 +36,8 @@ def main():
     load_dotenv()
     folder_path = os.getenv('FOLDER_PATH')
     filepath = os.getenv('QUESTIONS_PATH')
-    questions_answers_array = file_to_array(folder_path)
-    array_to_json(questions_answers_array, filepath)
+    questions_answers_array = get_questions(folder_path)
+    save_questions(questions_answers_array, filepath)
 
 
 if __name__ == "__main__":
