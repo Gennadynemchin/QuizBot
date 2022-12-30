@@ -15,7 +15,7 @@ def file_to_array(folder='quiz-questions'):
     return questions_array
 
 
-def array_to_json(array):
+def array_to_json(array, filepath):
     questions_dictionary = {}
     for element in array:
         if element.startswith(("Вопрос", "\nВопрос")):
@@ -28,15 +28,16 @@ def array_to_json(array):
             continue
 
     questions_answers = json.dumps(questions_dictionary, indent=4, ensure_ascii=False)
-    with open("sample.json", "w") as outfile:
+    with open(filepath, "w") as outfile:
         return outfile.write(questions_answers)
 
 
 def main():
     load_dotenv()
     folder_path = os.getenv('FOLDER_PATH')
+    filepath = os.getenv('QUESTIONS_PATH')
     questions_answers_array = file_to_array(folder_path)
-    array_to_json(questions_answers_array)
+    array_to_json(questions_answers_array, filepath)
 
 
 if __name__ == "__main__":
