@@ -129,7 +129,7 @@ def main():
                            password=redis_password,
                            decode_responses=True)
     with open(questions_path, 'r') as openfile:
-        questions_dict = json.load(openfile)
+        questions = json.load(openfile)
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.DEBUG)
@@ -140,7 +140,7 @@ def main():
         entry_points=[CommandHandler('start', partial(start, redis_db=redis_db))],
         states={State.NEW_QUESTION: [MessageHandler(Filters.regex(r'Новый вопрос'),
                                                     partial(handle_new_question_request,
-                                                            redis_db=redis_db, questions_dict=questions_dict)),
+                                                            redis_db=redis_db, questions_dict=questions)),
                                      MessageHandler(Filters.regex(r'Показать результаты'),
                                                     partial(get_score,
                                                             redis_db=redis_db))],
