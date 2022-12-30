@@ -46,7 +46,7 @@ parse_quiz_questions.py
 ```
 The script is already has path to the folder with env ```FOLDER_PATH```.
 The all the file in the folder will be parsed and
-saved as the ```QUESTIONS_PATH```. Then just put ```QUESTIONS_PATH```
+saved as the ```QUESTIONS_PATH```. Just put ```QUESTIONS_PATH```
 filename (ex. sample.json) in root of your app.
 Also you can change the path to the parsed and prepared questions
 using ```QUESTIONS_PATH``` in .env file. 
