@@ -22,6 +22,8 @@ REDIS_HOST=<YOUR-REDIS-DB-URL>
 REDIS_LOGIN=<YOUR-REDIS-LOGIN>
 REDIS_PASSWORD=<YOUR-REDIS-PASSWORD>
 VK_TOKEN=<YOUR-VK-TOKEN>
+QUESTIONS_PATH=<PATH-TO-QUESTIONS-FILE>
+FOLDER_PATH=<PATH-TO-FOLDER-WITH-RAW-QUESTIONS-DATA>
 ```
 
 - Get your Telegram bot token from https://t.me/BotFather
@@ -42,10 +44,12 @@ For generating a new sample.json just run:
 ```
 parse_quiz_questions.py
 ```
-The script is already has path to the folder ```quiz-questions```.
+The script is already has path to the folder with env ```FOLDER_PATH```.
 The all the file in the folder will be parsed and
 saved as the ```sample.json```. Then just put ```sample.json``` in
 root of your app.
+Also you can change the path to the parsed and prepared questions
+using ```QUESTIONS_PATH``` in .env file. 
 
 
 ### How to start
